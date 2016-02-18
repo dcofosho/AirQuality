@@ -13,6 +13,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
@@ -31,6 +33,7 @@ public class MainActivity extends Activity {
 //    Double longitude;
     String location;
     EditText editText;
+    JSONObject aqi;
 //    EditText editText2;
 
     @Override
@@ -55,12 +58,19 @@ public class MainActivity extends Activity {
     class MyTask extends AsyncTask<String, Integer, String> {
         @Override
         protected String doInBackground(String... params) {
-            Log.i("data_dan",service.getAQ(params[0]));
-            return service.getAQ(params[0]);
+            Log.i("data_dan",service.getAQI(params[0]));
+            return service.getAQI(params[0]);
         }
         @Override
         protected void onPostExecute(String result) {
-            textView.setText(result);
+
+            try {
+                aqi = new JSONObject(result);
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+            textView.setText(aqi.optString("breezometer_aqi"));
+//            textView.setText(result.replace("breezometer_aqi", "").replace(": ","").replace("}","").replace("{", ""));
         }
         @Override
         protected void onPreExecute() {
