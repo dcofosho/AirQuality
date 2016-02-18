@@ -19,9 +19,9 @@ import java.net.URI;
 public class HandleService {
     HttpResponse response;
     String responseString;
-    public String getAQ() {
+    public String getAQ(String location) {
         try{
-            URI uri = new URI("http://api.breezometer.com/baqi/?location=new+york&fields=breezometer_aqi&key=156744bdb0b44019b4e4a4d3e022bcca");
+            URI uri = new URI("http://api.breezometer.com/baqi/?location="+location+"&key=156744bdb0b44019b4e4a4d3e022bcca");
             HttpGet request = new HttpGet(uri);
             HttpClient client = new DefaultHttpClient();
             response = client.execute(request);
