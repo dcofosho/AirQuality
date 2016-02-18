@@ -26,8 +26,8 @@ import java.util.List;
  */
 public class MainActivity extends Activity {
     LocationManager manager;
-    Button button;
-    TextView textView;
+    Button aqiBtn;
+    TextView aqiTextView;
     HandleService service;
 //    Double latitude;
 //    Double longitude;
@@ -35,20 +35,23 @@ public class MainActivity extends Activity {
     EditText editText;
     JSONObject aqi;
 //    EditText editText2;
+    String selection;
+    String result;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        textView=(TextView) findViewById(R.id.textView);
-        button=(Button) findViewById(R.id.button);
+        aqiTextView=(TextView) findViewById(R.id.aqiTextView);
+        aqiBtn=(Button) findViewById(R.id.aqiBtn);
         service = new HandleService();
         editText= (EditText) findViewById(R.id.editText);
 //        editText2= (EditText) findViewById(R.id.editText2);
 
-        button.setOnClickListener(new View.OnClickListener(){
+        aqiBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
+                selection="aqi";
                 location=editText.getText().toString().replace(",","").replace(" ", "+");
 //                longitude=Double.parseDouble(editText2.getText().toString());
                 new MyTask().execute(location);
@@ -58,19 +61,24 @@ public class MainActivity extends Activity {
     class MyTask extends AsyncTask<String, Integer, String> {
         @Override
         protected String doInBackground(String... params) {
-            Log.i("data_dan",service.getAQI(params[0]));
-            return service.getAQI(params[0]);
+            if(selection.equals("aqi")) {
+                Log.i("data_dan", service.getAQI(params[0]));
+                result=service.getAQI(params[0]);
+            }
+                return result;
+
         }
         @Override
         protected void onPostExecute(String result) {
-
-            try {
-                aqi = new JSONObject(result);
-            }catch(Exception e){
-                e.printStackTrace();
-            }
-            textView.setText(aqi.optString("breezometer_aqi"));
+            if(selection.equals("aqi")) {
+                try {
+                    aqi = new JSONObject(result);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                aqiTextView.setText(aqi.optString("breezometer_aqi"));
 //            textView.setText(result.replace("breezometer_aqi", "").replace(": ","").replace("}","").replace("{", ""));
+            }
         }
         @Override
         protected void onPreExecute() {

@@ -21,20 +21,28 @@
         <!--android:layout_gravity="center_horizontal"-->
         <!--android:hint="longitude"/>-->
 
-    <Button
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal">
+        <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Get air quality info"
-        android:id="@+id/button"
+        android:text="Get air quality index"
+        android:id="@+id/aqiBtn"
         android:layout_gravity="center_horizontal" />
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text=""
-        android:id="@+id/textView"
-        android:textColor="#a7a7a7"
-        android:layout_gravity="center_horizontal" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text=""
+            android:id="@+id/aqiTextView"
+            android:textColor="#a7a7a7"
+            android:layout_gravity="center_horizontal" />
+    </LinearLayout>
+
+
 
 
 </LinearLayout>
