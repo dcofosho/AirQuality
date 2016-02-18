@@ -38,7 +38,7 @@ public class HandleService {
     }
     public String getAQI(String location) {
         try{
-            URI uri = new URI("http://api.breezometer.com/baqi/?location="+location+"&fields=breezometer_aqi&key=156744bdb0b44019b4e4a4d3e022bcca");
+            URI uri = new URI("http://api.breezometer.com/baqi/?location="+location+"&fields=breezometer_color,breezometer_aqi&key=156744bdb0b44019b4e4a4d3e022bcca");
             HttpGet request = new HttpGet(uri);
             HttpClient client = new DefaultHttpClient();
             response = client.execute(request);

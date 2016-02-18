@@ -2,6 +2,7 @@ package com.example.daniel.airquality;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -62,8 +63,8 @@ public class MainActivity extends Activity {
         @Override
         protected String doInBackground(String... params) {
             if(selection.equals("aqi")) {
-                Log.i("data_dan", service.getAQI(params[0]));
-                result=service.getAQI(params[0]);
+                Log.i("data_dan", service.getAQ(params[0]));
+                result=service.getAQ(params[0]);
             }
                 return result;
 
@@ -76,6 +77,7 @@ public class MainActivity extends Activity {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                aqiTextView.setTextColor(Color.parseColor(aqi.optString("breezometer_color")));
                 aqiTextView.setText(aqi.optString("breezometer_aqi"));
 //            textView.setText(result.replace("breezometer_aqi", "").replace(": ","").replace("}","").replace("{", ""));
             }
