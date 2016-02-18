@@ -29,10 +29,15 @@ public class MainActivity extends Activity {
     Button locationBtn;
     Button aqiBtn;
     Button descriptionBtn;
+    Button polBtn;
+    Button childBtn;
 
 
     TextView aqiTextView;
     TextView descriptionTextView;
+    TextView polTextView;
+    TextView childTextView;
+
     HandleService service;
 //    Double latitude;
 //    Double longitude;
@@ -40,6 +45,10 @@ public class MainActivity extends Activity {
     EditText editText;
     JSONObject aqi;
     JSONObject description;
+    JSONObject pol;
+    JSONObject recommendations;
+    String child;
+    JSONObject aq;
 //    EditText editText2;
     String selection;
     String result;
@@ -51,8 +60,15 @@ public class MainActivity extends Activity {
         locationBtn=(Button) findViewById(R.id.locationBtn);
         aqiTextView=(TextView) findViewById(R.id.aqiTextView);
         aqiBtn=(Button) findViewById(R.id.aqiBtn);
+
         descriptionTextView=(TextView)findViewById(R.id.descriptionTextView);
         descriptionBtn=(Button) findViewById(R.id.descriptionBtn);
+
+        polTextView=(TextView) findViewById(R.id.polTextView);
+        polBtn=(Button) findViewById(R.id.polBtn);
+
+        childTextView=(TextView) findViewById(R.id.childTextView);
+        childBtn=(Button) findViewById(R.id.childBtn);
 
 
         service = new HandleService();
@@ -66,9 +82,15 @@ public class MainActivity extends Activity {
                 aqiTextView.setVisibility(View.VISIBLE);
                 descriptionBtn.setVisibility(View.VISIBLE);
                 descriptionTextView.setVisibility(View.VISIBLE);
+                polBtn.setVisibility(View.VISIBLE);
+                polTextView.setVisibility(View.VISIBLE);
+                childBtn.setVisibility(View.VISIBLE);
+                childTextView.setVisibility(View.VISIBLE);
+
                 location=editText.getText().toString().replace(",","").replace(" ", "+");
                 aqiTextView.setText("");
                 descriptionTextView.setText("");
+                polTextView.setText("");
             }
         });
         aqiBtn.setOnClickListener(new View.OnClickListener(){
@@ -85,6 +107,26 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View view){
                 selection="description";
+                location=editText.getText().toString().replace(",","").replace(" ", "+");
+//                longitude=Double.parseDouble(editText2.getText().toString());
+                new MyTask().execute(location);
+            }
+        });
+
+        polBtn.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                selection="pol";
+                location=editText.getText().toString().replace(",","").replace(" ", "+");
+//                longitude=Double.parseDouble(editText2.getText().toString());
+                new MyTask().execute(location);
+            }
+        });
+
+        childBtn.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                selection="child";
                 location=editText.getText().toString().replace(",","").replace(" ", "+");
 //                longitude=Double.parseDouble(editText2.getText().toString());
                 new MyTask().execute(location);
@@ -109,6 +151,7 @@ public class MainActivity extends Activity {
                     aqiTextView.setTextColor(Color.parseColor(aqi.optString("breezometer_color")));
                     aqiTextView.setText(aqi.optString("breezometer_aqi"));
                 } catch (Exception e) {
+                    aqiTextView.setText("Info not available");
                     e.printStackTrace();
                 }
 
@@ -119,6 +162,27 @@ public class MainActivity extends Activity {
                     descriptionTextView.setTextColor(Color.parseColor(description.optString("breezometer_color")));
                     descriptionTextView.setText(description.optString("breezometer_description"));
                 } catch (Exception e) {
+                    polTextView.setText("Info not available");
+                    e.printStackTrace();
+                }
+            }else if(selection.equals("pol")){
+                try {
+                    pol = new JSONObject(result);
+                    polTextView.setTextColor(Color.parseColor(pol.optString("breezometer_color")));
+                    polTextView.setText(pol.optString("dominant_pollutant_description"));
+                } catch (Exception e) {
+                    polTextView.setText("Info not available");
+                    e.printStackTrace();
+                }
+            }else if(selection.equals("child")){
+                try {
+                    aq = new JSONObject(result);
+                    recommendations=aq.optJSONObject("random_recommendations");
+                    child=recommendations.optString("children");
+                    childTextView.setTextColor(Color.parseColor(aq.optString("breezometer_color")));
+                    childTextView.setText(child);
+                } catch (Exception e) {
+                    polTextView.setText("Info not available");
                     e.printStackTrace();
                 }
             }
