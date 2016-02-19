@@ -45,7 +45,6 @@ import java.util.List;
  */
 public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
 
-
     HttpResponse response;
     String responseString;
     GoogleMap map;
@@ -79,10 +78,16 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     String result;
     SupportMapFragment fm;
 
+    MarkerOptions marker;
+    Boolean gettingAqi;
+
+    String breezometerAqi;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        gettingAqi=false;
         fm = (SupportMapFragment)  getSupportFragmentManager().findFragmentById(R.id.map);
         map = fm.getMap();
 
@@ -127,9 +132,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onClick(View view){
                 selection="aqi";
-                location=editText.getText().toString().replace(",","").replace(" ", "+");
+                location=editText.getText().toString().replace(",", "").replace(" ", "+");
 //                longitude=Double.parseDouble(editText2.getText().toString());
                 new MyTask().execute(location);
+
             }
         });
 
@@ -181,6 +187,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     aqi = new JSONObject(result);
                     aqiTextView.setTextColor(Color.parseColor(aqi.optString("breezometer_color")));
                     aqiTextView.setText(aqi.optString("breezometer_aqi"));
+                    breezometerAqi=aqi.optString("breezometer_aqi");
+                    gettingAqi=true;
+                    onMapReady(map);
                 } catch (Exception e) {
                     aqiTextView.setText("Info not available");
                     e.printStackTrace();
@@ -283,9 +292,13 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         // Add a marker in Sydney and move the camera
 
-        LatLng sydney = new LatLng(latitude,longitude);
-        googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        LatLng pos = new LatLng(latitude,longitude);
+        marker = new MarkerOptions().position(pos).title(editText.getText().toString());
+        if(gettingAqi==true){
+            marker.snippet(breezometerAqi);
+        }
+        googleMap.addMarker(marker);
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(pos));
         try {
             Log.v("data_dan_JSON", getLatLong()+"");
         }catch(Exception e){
