@@ -3,6 +3,7 @@ package com.example.daniel.airquality;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -23,10 +24,17 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -35,7 +43,11 @@ import java.util.List;
  * Created by Daniel on 2/7/2016.
  */
 public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
-    private GoogleMap map;
+
+
+    HttpResponse response;
+    String responseString;
+    GoogleMap map;
     Button locationBtn;
     Button aqiBtn;
     Button descriptionBtn;
@@ -57,18 +69,22 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     JSONObject description;
     JSONObject pol;
     JSONObject recommendations;
+    JSONObject locationObj;
+    JSONObject locationInfo;
     String child;
     JSONObject aq;
 //    EditText editText2;
     String selection;
     String result;
+    SupportMapFragment fm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        SupportMapFragment fm = (SupportMapFragment)  getSupportFragmentManager().findFragmentById(R.id.map);
+        fm = (SupportMapFragment)  getSupportFragmentManager().findFragmentById(R.id.map);
         map = fm.getMap();
+
         locationBtn=(Button) findViewById(R.id.locationBtn);
         aqiTextView=(TextView) findViewById(R.id.aqiTextView);
         aqiBtn=(Button) findViewById(R.id.aqiBtn);
@@ -98,11 +114,12 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 polTextView.setVisibility(View.VISIBLE);
                 childBtn.setVisibility(View.VISIBLE);
                 childTextView.setVisibility(View.VISIBLE);
-
                 location=editText.getText().toString().replace(",","").replace(" ", "+");
                 aqiTextView.setText("");
                 descriptionTextView.setText("");
                 polTextView.setText("");
+                onMapReady(map);
+                new LatLongTask().execute();
             }
         });
         aqiBtn.setOnClickListener(new View.OnClickListener(){
@@ -148,12 +165,16 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     }
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        map = googleMap;
-
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        map.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        map.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+
+        LatLng sydney = new LatLng(40,40);
+        googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        try {
+            Log.v("data_dan_JSON", getLatLong()+"");
+        }catch(Exception e){
+            Log.v("data_dan_JSON", "nil");
+        }
     }
     class MyTask extends AsyncTask<String, Integer, String> {
         @Override
@@ -216,5 +237,41 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         protected void onProgressUpdate(Integer... values) {
 
         }
+    }
+    class LatLongTask extends AsyncTask<String,Integer,JSONObject>{
+        @Override
+        protected JSONObject doInBackground(String...params) {
+            return getLatLong();
+        }
+        @Override
+        protected void onPostExecute(JSONObject result) {
+            Log.v("JSON_result_dan",result.toString());
+        }
+        @Override
+        protected void onPreExecute() {
+
+        }
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+
+        }
+    }
+    public JSONObject getLatLong() {
+
+        try {
+            URI uri = new URI("https://maps.googleapis.com/maps/api/geocode/json?address=" +location+"&key=AIzaSyAOolIF3JIZfb-1PyotIkVYIV0LXNFW7fs");
+            HttpGet request = new HttpGet(uri);
+            HttpClient client = new DefaultHttpClient();
+            response = client.execute(request);
+            HttpEntity httpEntity = response.getEntity();
+            responseString = EntityUtils.toString(httpEntity);
+            locationInfo = new JSONObject(responseString);
+//            locationObj = locationInfo.optJSONObject("results").optJSONObject("geometry").optJSONObject("location");
+//            locationObj = locationInfo.optJSONObject("results");
+        }catch(Exception e){
+            Log.v("data_dan_latlng", "nil");
+        }
+        return locationInfo;
+
     }
 }
