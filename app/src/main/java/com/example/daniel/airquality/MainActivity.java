@@ -62,8 +62,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     TextView childTextView;
 
     HandleService service;
-//    Double latitude;
-//    Double longitude;
+    Double latitude;
+    Double longitude;
     String location;
     EditText editText;
     JSONObject aqi;
@@ -119,7 +119,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 aqiTextView.setText("");
                 descriptionTextView.setText("");
                 polTextView.setText("");
-                onMapReady(map);
+
                 new LatLongTask().execute();
             }
         });
@@ -164,19 +164,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
     }
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        // Add a marker in Sydney and move the camera
 
-        LatLng sydney = new LatLng(40,40);
-        googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-        try {
-            Log.v("data_dan_JSON", getLatLong()+"");
-        }catch(Exception e){
-            Log.v("data_dan_JSON", "nil");
-        }
-    }
     class MyTask extends AsyncTask<String, Integer, String> {
         @Override
         protected String doInBackground(String... params) {
@@ -251,8 +239,12 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             JSONArray resultJSONArray = result.optJSONArray("results");
             try {
                 JSONObject locationJSONObj = resultJSONArray.getJSONObject(0).optJSONObject("geometry").optJSONObject("location");
-
-                Log.v("_dan_geom",locationJSONObj.toString());
+                latitude=locationJSONObj.optDouble("lat");
+                longitude=locationJSONObj.optDouble("lng");
+                onMapReady(map);
+                Log.v("_dan_loc",locationJSONObj.toString());
+                Log.v("_dan_lat",latitude+"");
+                Log.v("_dan_lng",longitude+"");
             }catch(Exception e){
                 Log.v("_dan",e.getMessage());
             }
@@ -286,5 +278,18 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         }
         return locationInfo;
 
+    }
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        // Add a marker in Sydney and move the camera
+
+        LatLng sydney = new LatLng(latitude,longitude);
+        googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        try {
+            Log.v("data_dan_JSON", getLatLong()+"");
+        }catch(Exception e){
+            Log.v("data_dan_JSON", "nil");
+        }
     }
 }
