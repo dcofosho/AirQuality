@@ -30,6 +30,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -246,6 +247,18 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         @Override
         protected void onPostExecute(JSONObject result) {
             Log.v("JSON_result_dan",result.toString());
+            Log.v("JSON_result_dan2", result.optJSONArray("results").toString());
+            JSONArray resultJSONArray = result.optJSONArray("results");
+            try {
+                JSONObject locationJSONObj = resultJSONArray.getJSONObject(0).optJSONObject("geometry").optJSONObject("location");
+
+                Log.v("_dan_geom",locationJSONObj.toString());
+            }catch(Exception e){
+                Log.v("_dan",e.getMessage());
+            }
+
+
+
         }
         @Override
         protected void onPreExecute() {
