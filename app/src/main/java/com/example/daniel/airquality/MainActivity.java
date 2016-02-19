@@ -8,11 +8,20 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.json.JSONObject;
 
@@ -25,7 +34,8 @@ import java.util.List;
 /**
  * Created by Daniel on 2/7/2016.
  */
-public class MainActivity extends Activity {
+public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
+    private GoogleMap map;
     Button locationBtn;
     Button aqiBtn;
     Button descriptionBtn;
@@ -57,6 +67,8 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        SupportMapFragment fm = (SupportMapFragment)  getSupportFragmentManager().findFragmentById(R.id.map);
+        map = fm.getMap();
         locationBtn=(Button) findViewById(R.id.locationBtn);
         aqiTextView=(TextView) findViewById(R.id.aqiTextView);
         aqiBtn=(Button) findViewById(R.id.aqiBtn);
@@ -133,6 +145,15 @@ public class MainActivity extends Activity {
             }
         });
 
+    }
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        map = googleMap;
+
+        // Add a marker in Sydney and move the camera
+        LatLng sydney = new LatLng(-34, 151);
+        map.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        map.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
     class MyTask extends AsyncTask<String, Integer, String> {
         @Override
