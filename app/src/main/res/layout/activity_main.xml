@@ -40,7 +40,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text=""
-        android:id="@+id/experiment"
+        android:id="@+id/gpsTextView"
         android:textColor="#a7a7a7"
         android:layout_gravity="center_horizontal"
         android:visibility="visible" />

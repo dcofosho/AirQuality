@@ -111,19 +111,21 @@ public class MainActivity extends FragmentActivity implements
 
     private Location mLastLocation;
     public LocationManager mLocationManager;
-    TextView experiment;
+    TextView gpsTextView;
     String strAdd;
-
+    Boolean usingGps;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        latitude=0.0;
+        longitude=0.0;
         int LOCATION_REFRESH_TIME = 1000;
         int LOCATION_REFRESH_DISTANCE = 5;
-        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_REFRESH_TIME,
-                LOCATION_REFRESH_DISTANCE, mLocationListener);
+//        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+//        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_REFRESH_TIME,
+//                LOCATION_REFRESH_DISTANCE, mLocationListener);
 
         fm = (SupportMapFragment)  getSupportFragmentManager().findFragmentById(R.id.map);
         map = fm.getMap();
@@ -141,22 +143,84 @@ public class MainActivity extends FragmentActivity implements
         childTextView=(TextView) findViewById(R.id.childTextView);
         childBtn=(Button) findViewById(R.id.childBtn);
 
-        experiment = (TextView) findViewById(R.id.experiment);
+        gpsTextView = (TextView) findViewById(R.id.gpsTextView);
 
-        try{
-            mLastLocation=mLocationManager.getLastKnownLocation("gps");
-            experiment.setText(mLastLocation.getLatitude()+"");
-        }catch (Exception e){
-            Log.v("_dan_Exception",e.getMessage());
-        }
 
         service = new HandleService();
         editText= (EditText) findViewById(R.id.editText);
 //        editText2= (EditText) findViewById(R.id.editText2);
+        map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        map.setMyLocationEnabled(true);
+        map.getUiSettings().setZoomControlsEnabled(true);
+        map.getUiSettings().setCompassEnabled(true);
+        map.getUiSettings().setMyLocationButtonEnabled(true);
+        map.getUiSettings().setZoomGesturesEnabled(true);
+        map.getUiSettings().setRotateGesturesEnabled(true);
 
+        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        List<String> providers = lm.getProviders(true);
+        Location l = null;
+
+        for (int i = 0; i < providers.size(); i++) {
+            l = lm.getLastKnownLocation(providers.get(i));
+            if (l != null) {
+                latitude = l.getLatitude();
+                longitude = l.getLongitude();
+                usingGps=true;
+
+                strAdd = getCompleteAddressString(latitude, longitude);
+                location=strAdd.replace(",","").replace(" ", "+");
+                gpsTextView.setText("Got GPS Location : " + strAdd);
+                Log.v("_dan_location",location);
+                break;
+            }
+        }
+
+        if (map != null) {
+
+//            MarkerOptions marker = new MarkerOptions().position(
+//                    new LatLng(latitude, longitude)).title("Hello Maps").snippet("Discription");
+//
+//            marker.icon(BitmapDescriptorFactory
+//                    .defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+//
+//// Moving Camera to a Location with animation
+//            CameraPosition cameraPosition = new CameraPosition.Builder()
+//                    .target(new LatLng(latitude, longitude)).zoom(12).build();
+//
+//            map.animateCamera(CameraUpdateFactory
+//                    .newCameraPosition(cameraPosition));
+//
+//            map.addMarker(marker);
+
+            aqiBtn.setVisibility(View.VISIBLE);
+            aqiTextView.setVisibility(View.VISIBLE);
+            descriptionBtn.setVisibility(View.VISIBLE);
+            descriptionTextView.setVisibility(View.VISIBLE);
+            polBtn.setVisibility(View.VISIBLE);
+            polTextView.setVisibility(View.VISIBLE);
+            childBtn.setVisibility(View.VISIBLE);
+            childTextView.setVisibility(View.VISIBLE);
+            aqiTextView.setText("");
+            descriptionTextView.setText("");
+            polTextView.setText("");
+            mySnippet=new StringBuilder("");
+            gettingAqi=false;
+            gettingDescription=false;
+            gettingPol=false;
+            gettingChild=false;
+            aqiException=false;
+            childException=false;
+            descriptionException=false;
+            pollutantException=false;
+            onMapReady(map);
+        }
+
+        Log.v("_dan_strAdd",location);
         locationBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
+                usingGps=false;
                 aqiBtn.setVisibility(View.VISIBLE);
                 aqiTextView.setVisibility(View.VISIBLE);
                 descriptionBtn.setVisibility(View.VISIBLE);
@@ -186,7 +250,6 @@ public class MainActivity extends FragmentActivity implements
             public void onClick(View view){
                 map.clear();
                 selection="aqi";
-                location=editText.getText().toString().replace(",", "").replace(" ", "+");
 //                longitude=Double.parseDouble(editText2.getText().toString());
                 gettingAqi=true;
 
@@ -199,7 +262,6 @@ public class MainActivity extends FragmentActivity implements
             public void onClick(View view){
                 map.clear();
                 selection="description";
-                location=editText.getText().toString().replace(",","").replace(" ", "+");
 //                longitude=Double.parseDouble(editText2.getText().toString());
                 gettingDescription=true;
 
@@ -212,7 +274,6 @@ public class MainActivity extends FragmentActivity implements
             public void onClick(View view){
                 map.clear();
                 selection="pol";
-                location=editText.getText().toString().replace(",","").replace(" ", "+");
 //                longitude=Double.parseDouble(editText2.getText().toString());
                 gettingChild=true;
 
@@ -225,7 +286,7 @@ public class MainActivity extends FragmentActivity implements
             public void onClick(View view) {
                 map.clear();
                 selection = "child";
-                location = editText.getText().toString().replace(",", "").replace(" ", "+");
+
 //                longitude=Double.parseDouble(editText2.getText().toString());
 
                 new MyTask().execute(location);
@@ -234,47 +295,7 @@ public class MainActivity extends FragmentActivity implements
 
 
 
-            map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-            map.setMyLocationEnabled(true);
-            map.getUiSettings().setZoomControlsEnabled(true);
-            map.getUiSettings().setCompassEnabled(true);
-            map.getUiSettings().setMyLocationButtonEnabled(true);
-            map.getUiSettings().setZoomGesturesEnabled(true);
-            map.getUiSettings().setRotateGesturesEnabled(true);
 
-            LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            List<String> providers = lm.getProviders(true);
-            Location l = null;
-
-            for (int i = 0; i < providers.size(); i++) {
-                l = lm.getLastKnownLocation(providers.get(i));
-                if (l != null) {
-                    latitude = l.getLatitude();
-                    longitude = l.getLongitude();
-                    strAdd = getCompleteAddressString(latitude, longitude);
-                    experiment.setText("Complete Address : " + strAdd);
-                    break;
-                }
-            }
-
-            if (map != null) {
-
-                MarkerOptions marker = new MarkerOptions().position(
-                        new LatLng(latitude, longitude)).title("Hello Maps").snippet("Discription");
-
-                marker.icon(BitmapDescriptorFactory
-                        .defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-
-// Moving Camera to a Location with animation
-                CameraPosition cameraPosition = new CameraPosition.Builder()
-                        .target(new LatLng(latitude, longitude)).zoom(12).build();
-
-                map.animateCamera(CameraUpdateFactory
-                        .newCameraPosition(cameraPosition));
-
-                map.addMarker(marker);
-
-            }
 
     }
     private String getCompleteAddressString(double LATITUDE, double LONGITUDE) {
@@ -293,69 +314,16 @@ public class MainActivity extends FragmentActivity implements
                             "\n");
                 }
                 strAdd = strReturnedAddress.toString();
-                Log.w("My Current loction address",
+                Log.w("My Current address",
                         "" + strReturnedAddress.toString());
             } else {
-                Log.w("My Current loction address", "No Address returned!");
+                Log.w("My Current address", "No Address returned!");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            Log.w("My Current loction address", "Canont get Address!");
+            Log.w("My Current address", "Canont get Address!");
         }
         return strAdd;
-    }
-    private final LocationListener mLocationListener = new LocationListener() {
-        @Override
-        public void onLocationChanged(Location location) {
-            //code
-            System.out.println("onLocationChanged");
-            mLastLocation = location;
-            try{
-
-                experiment.setText(mLastLocation.getLatitude()+"");
-            }catch (Exception e){
-                Log.v("_dan_Exception",e.getMessage());
-            }
-
-        }
-
-        @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {
-            System.out.println("onStatusChanged");
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-            System.out.println("onProviderEnabled");
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-            System.out.println("onProviderDisabled");
-            //turns off gps services
-        }
-    };
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -377,8 +345,8 @@ public class MainActivity extends FragmentActivity implements
     class MyTask extends AsyncTask<String, Integer, String> {
         @Override
         protected String doInBackground(String... params) {
-            Log.i("data_dan", service.getAQ(params[0]));
-            result=service.getAQ(params[0]);
+            Log.i("data_dan", service.getAQ(params[0], usingGps, latitude, longitude));
+            result=service.getAQ(params[0], usingGps, latitude,longitude);
             if(selection.equals("aqi")) {
                 try {
                     aqi = new JSONObject(result);

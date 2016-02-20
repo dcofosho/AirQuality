@@ -21,9 +21,14 @@ public class HandleService {
     HttpResponse response;
     String responseString;
     JSONObject aqi;
-    public String getAQ(String location) {
+    URI uri;
+    public String getAQ(String location, Boolean usingGps, Double latitude, Double longitude) {
         try{
-            URI uri = new URI("http://api.breezometer.com/baqi/?location="+location+"&key=156744bdb0b44019b4e4a4d3e022bcca");
+            if(usingGps){
+                uri = new URI("http://api.breezometer.com/baqi/?lat="+latitude+"&lon="+longitude+"&key=156744bdb0b44019b4e4a4d3e022bcca");
+            }else{
+                uri = new URI("http://api.breezometer.com/baqi/?location="+location+"&key=156744bdb0b44019b4e4a4d3e022bcca");
+            }
             HttpGet request = new HttpGet(uri);
             HttpClient client = new DefaultHttpClient();
             response = client.execute(request);
