@@ -3,6 +3,7 @@ package com.example.daniel.airquality;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
@@ -12,16 +13,21 @@ import android.os.Bundle;
 
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.apache.http.HttpEntity;
@@ -30,6 +36,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -47,7 +54,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
     HttpResponse response;
     String responseString;
-    GoogleMap map;
+    private GoogleMap map;
     Button locationBtn;
     Button aqiBtn;
     Button descriptionBtn;
@@ -81,18 +88,34 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     MarkerOptions marker;
     Boolean gettingAqi;
     Boolean gettingDescription;
+    Boolean gettingPol;
+    Boolean gettingChild;
 
-    String snippet;
+    StringBuilder mySnippet;
+
     String breezometerAqi;
     String aqDescription;
+    String pollutant;
+
+
+    Boolean aqiException;
+    Boolean descriptionException;
+    Boolean pollutantException;
+    Boolean childException;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        snippet="";
+
         gettingAqi=false;
         gettingDescription=false;
+        gettingPol=false;
+        gettingChild=false;
+        aqiException=false;
+        childException=false;
+        descriptionException=false;
+        pollutantException=false;
         fm = (SupportMapFragment)  getSupportFragmentManager().findFragmentById(R.id.map);
         map = fm.getMap();
 
@@ -129,27 +152,32 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 aqiTextView.setText("");
                 descriptionTextView.setText("");
                 polTextView.setText("");
-                snippet=editText.getText().toString();
+                mySnippet=new StringBuilder("");
                 new LatLongTask().execute();
             }
         });
         aqiBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
+                map.clear();
                 selection="aqi";
                 location=editText.getText().toString().replace(",", "").replace(" ", "+");
 //                longitude=Double.parseDouble(editText2.getText().toString());
-                new MyTask().execute(location);
+                gettingAqi=true;
 
+                new MyTask().execute(location);
             }
         });
 
         descriptionBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
+                map.clear();
                 selection="description";
                 location=editText.getText().toString().replace(",","").replace(" ", "+");
 //                longitude=Double.parseDouble(editText2.getText().toString());
+                gettingDescription=true;
+
                 new MyTask().execute(location);
             }
         });
@@ -157,9 +185,12 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         polBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
+                map.clear();
                 selection="pol";
                 location=editText.getText().toString().replace(",","").replace(" ", "+");
 //                longitude=Double.parseDouble(editText2.getText().toString());
+                gettingChild=true;
+
                 new MyTask().execute(location);
             }
         });
@@ -167,9 +198,11 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         childBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
+                map.clear();
                 selection="child";
                 location=editText.getText().toString().replace(",","").replace(" ", "+");
 //                longitude=Double.parseDouble(editText2.getText().toString());
+
                 new MyTask().execute(location);
             }
         });
@@ -179,25 +212,16 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     class MyTask extends AsyncTask<String, Integer, String> {
         @Override
         protected String doInBackground(String... params) {
-
             Log.i("data_dan", service.getAQ(params[0]));
             result=service.getAQ(params[0]);
-            return result;
-
-        }
-        @Override
-        protected void onPostExecute(String result) {
             if(selection.equals("aqi")) {
                 try {
                     aqi = new JSONObject(result);
-                    aqiTextView.setTextColor(Color.parseColor(aqi.optString("breezometer_color")));
-                    aqiTextView.setText(aqi.optString("breezometer_aqi"));
                     breezometerAqi=aqi.optString("breezometer_aqi");
-                    snippet=snippet+"Air Quality Index = "+breezometerAqi+"\n";
+
                     gettingAqi=true;
-                    onMapReady(map);
                 } catch (Exception e) {
-                    aqiTextView.setText("Info not available");
+                    aqiException=true;
                     e.printStackTrace();
                 }
 
@@ -205,23 +229,19 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             }else if(selection.equals("description")){
                 try {
                     description = new JSONObject(result);
-                    descriptionTextView.setTextColor(Color.parseColor(description.optString("breezometer_color")));
-                    descriptionTextView.setText(description.optString("breezometer_description"));
                     aqDescription=description.optString("breezometer_description");
                     gettingDescription=true;
-                    snippet=snippet+aqDescription;
-                    onMapReady(map);
                 } catch (Exception e) {
-                    polTextView.setText("Info not available");
+                    descriptionException=true;
                     e.printStackTrace();
                 }
             }else if(selection.equals("pol")){
                 try {
                     pol = new JSONObject(result);
-                    polTextView.setTextColor(Color.parseColor(pol.optString("breezometer_color")));
-                    polTextView.setText(pol.optString("dominant_pollutant_description"));
+                    pollutant=pol.optString("dominant_pollutant_description");
+
                 } catch (Exception e) {
-                    polTextView.setText("Info not available");
+                    pollutantException=true;
                     e.printStackTrace();
                 }
             }else if(selection.equals("child")){
@@ -229,17 +249,70 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     aq = new JSONObject(result);
                     recommendations=aq.optJSONObject("random_recommendations");
                     child=recommendations.optString("children");
-                    childTextView.setTextColor(Color.parseColor(aq.optString("breezometer_color")));
-                    childTextView.setText(child);
                 } catch (Exception e) {
-                    polTextView.setText("Info not available");
+                    childException=true;
                     e.printStackTrace();
                 }
             }
+            return result;
+
+        }
+        @Override
+        protected void onPostExecute(String result) {
+            if(gettingAqi) {
+                try {
+                    mySnippet.append(" , Air Quality Index = " + breezometerAqi);
+                    aqiTextView.setTextColor(Color.parseColor(aqi.optString("breezometer_color")));
+                    aqiTextView.setText(aqi.optString("breezometer_aqi"));
+                }catch(Exception e){
+                    aqiException=true;
+                }
+            }
+            if(gettingDescription) {
+                try {
+                    mySnippet.append(", "+aqDescription);
+                    descriptionTextView.setTextColor(Color.parseColor(description.optString("breezometer_color")));
+                    descriptionTextView.setText(description.optString("breezometer_description"));
+                }catch(Exception e){
+                    descriptionException=true;
+                }
+            }
+            if(gettingPol) {
+                try {
+                    mySnippet.append(", "+pollutant);
+                    polTextView.setTextColor(Color.parseColor(pol.optString("breezometer_color")));
+                    polTextView.setText(pol.optString("dominant_pollutant_description"));
+                }catch (Exception e){
+                    pollutantException=true;
+                }
+            }
+            if(gettingChild) {
+                try {
+                    mySnippet.append(", "+child);
+                    childTextView.setTextColor(Color.parseColor(aq.optString("breezometer_color")));
+                    childTextView.setText(child);
+                }catch (Exception e){
+                    childException=true;
+                }
+            }
+
+
+            if(aqiException){
+                aqiTextView.setText("Info not available");
+            }
+            if(descriptionException){
+                descriptionTextView.setText("Info not available");
+            }
+            if(pollutantException){
+                polTextView.setText("Info not available");
+            }
+            if(childException){
+                childTextView.setText("Info not available");
+            }
+            onMapReady(map);
         }
         @Override
         protected void onPreExecute() {
-
         }
         @Override
         protected void onProgressUpdate(Integer... values) {
@@ -258,7 +331,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 JSONObject locationJSONObj = resultJSONArray.getJSONObject(0).optJSONObject("geometry").optJSONObject("location");
                 latitude=locationJSONObj.optDouble("lat");
                 longitude=locationJSONObj.optDouble("lng");
-                onMapReady(map);
                 Log.v("_dan_loc",locationJSONObj.toString());
                 Log.v("_dan_lat",latitude+"");
                 Log.v("_dan_lng",longitude+"");
@@ -270,6 +342,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         @Override
         protected void onPostExecute(JSONObject result) {
 
+            onMapReady(map);
         }
         @Override
         protected void onPreExecute() {
@@ -304,9 +377,37 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
         LatLng pos = new LatLng(latitude,longitude);
 
-        marker = new MarkerOptions().position(pos).title(snippet);
+        googleMap.addMarker(new MarkerOptions().position(pos).title(location).snippet(mySnippet.toString()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+        googleMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
 
-        googleMap.addMarker(marker);
+            @Override
+            public View getInfoWindow(Marker arg0) {
+                return null;
+            }
+
+            @Override
+            public View getInfoContents(Marker marker) {
+
+                LinearLayout info = new LinearLayout(getApplication());
+                info.setOrientation(LinearLayout.VERTICAL);
+
+                TextView title = new TextView(getApplicationContext());
+                title.setTextColor(Color.BLACK);
+                title.setGravity(Gravity.CENTER);
+                title.setTypeface(null, Typeface.BOLD);
+                title.setText(marker.getTitle());
+
+                TextView snippet = new TextView(getBaseContext());
+                snippet.setTextColor(Color.GRAY);
+                snippet.setText(marker.getSnippet());
+
+                info.addView(title);
+                info.addView(snippet);
+
+                return info;
+            }
+        });
+
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(pos));
         try {
             Log.v("data_dan_JSON", getLatLong()+"");
