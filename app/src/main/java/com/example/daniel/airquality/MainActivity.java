@@ -80,14 +80,19 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
     MarkerOptions marker;
     Boolean gettingAqi;
+    Boolean gettingDescription;
 
+    String snippet;
     String breezometerAqi;
+    String aqDescription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        snippet="";
         gettingAqi=false;
+        gettingDescription=false;
         fm = (SupportMapFragment)  getSupportFragmentManager().findFragmentById(R.id.map);
         map = fm.getMap();
 
@@ -124,7 +129,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 aqiTextView.setText("");
                 descriptionTextView.setText("");
                 polTextView.setText("");
-
+                snippet=editText.getText().toString();
                 new LatLongTask().execute();
             }
         });
@@ -188,6 +193,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     aqiTextView.setTextColor(Color.parseColor(aqi.optString("breezometer_color")));
                     aqiTextView.setText(aqi.optString("breezometer_aqi"));
                     breezometerAqi=aqi.optString("breezometer_aqi");
+                    snippet=snippet+"Air Quality Index = "+breezometerAqi+"\n";
                     gettingAqi=true;
                     onMapReady(map);
                 } catch (Exception e) {
@@ -201,6 +207,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     description = new JSONObject(result);
                     descriptionTextView.setTextColor(Color.parseColor(description.optString("breezometer_color")));
                     descriptionTextView.setText(description.optString("breezometer_description"));
+                    aqDescription=description.optString("breezometer_description");
+                    gettingDescription=true;
+                    snippet=snippet+aqDescription;
+                    onMapReady(map);
                 } catch (Exception e) {
                     polTextView.setText("Info not available");
                     e.printStackTrace();
@@ -239,14 +249,12 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     class LatLongTask extends AsyncTask<String,Integer,JSONObject>{
         @Override
         protected JSONObject doInBackground(String...params) {
-            return getLatLong();
-        }
-        @Override
-        protected void onPostExecute(JSONObject result) {
-            Log.v("JSON_result_dan",result.toString());
-            Log.v("JSON_result_dan2", result.optJSONArray("results").toString());
-            JSONArray resultJSONArray = result.optJSONArray("results");
+            JSONObject latLong=new JSONObject();
             try {
+                latLong=getLatLong();
+                Log.v("JSON_result_dan",latLong.toString());
+                Log.v("JSON_result_dan2", latLong.optJSONArray("results").toString());
+                JSONArray resultJSONArray = latLong.optJSONArray("results");
                 JSONObject locationJSONObj = resultJSONArray.getJSONObject(0).optJSONObject("geometry").optJSONObject("location");
                 latitude=locationJSONObj.optDouble("lat");
                 longitude=locationJSONObj.optDouble("lng");
@@ -257,8 +265,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             }catch(Exception e){
                 Log.v("_dan",e.getMessage());
             }
-
-
+            return latLong;
+        }
+        @Override
+        protected void onPostExecute(JSONObject result) {
 
         }
         @Override
@@ -293,10 +303,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         // Add a marker in Sydney and move the camera
 
         LatLng pos = new LatLng(latitude,longitude);
-        marker = new MarkerOptions().position(pos).title(editText.getText().toString());
-        if(gettingAqi==true){
-            marker.snippet(breezometerAqi);
-        }
+
+        marker = new MarkerOptions().position(pos).title(snippet);
+
         googleMap.addMarker(marker);
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(pos));
         try {
