@@ -66,12 +66,26 @@ public class MainActivity extends FragmentActivity implements
     Button descriptionBtn;
     Button polBtn;
     Button childBtn;
+    Button sportBtn;
+    Button healthBtn;
+    Button indoorBtn;
+    Button outdoorBtn;
+    Button effectsBtn;
+    Button causesBtn;
 
 
     TextView aqiTextView;
     TextView descriptionTextView;
     TextView polTextView;
     TextView childTextView;
+    TextView sportTextView;
+    TextView healthTextView;
+    TextView indoorTextView;
+    TextView outdoorTextView;
+    TextView effectsTextView;
+    TextView causesTextView;
+
+
 
     HandleService service;
     Double latitude;
@@ -83,9 +97,16 @@ public class MainActivity extends FragmentActivity implements
     JSONObject pol;
     JSONObject recommendations;
     JSONObject jsonChild;
+    JSONObject jsonsport;
+    JSONObject jsonhealth;
+    JSONObject jsonindoors;
+    JSONObject jsonoutdoors;
+    JSONObject jsoneffects;
+    JSONObject jsoncauses;
+
     JSONObject locationObj;
     JSONObject locationInfo;
-    String child;
+
     JSONObject aq;
 //    EditText editText2;
     String selection;
@@ -97,18 +118,37 @@ public class MainActivity extends FragmentActivity implements
     Boolean gettingDescription;
     Boolean gettingPol;
     Boolean gettingChild;
+    Boolean gettingSport;
+    Boolean gettingHealth;
+    Boolean gettingIndoors;
+    Boolean gettingOutdoors;
+    Boolean gettingEffects;
+    Boolean gettingCauses;
 
     StringBuilder mySnippet;
 
     String breezometerAqi;
     String aqDescription;
     String pollutant;
+    String child;
+    String sport;
+    String health;
+    String indoors;
+    String outdoors;
+    String effects;
+    String causes;
 
 
     Boolean aqiException;
     Boolean descriptionException;
     Boolean pollutantException;
     Boolean childException;
+    Boolean sportException;
+    Boolean healthException;
+    Boolean indoorsException;
+    Boolean outdoorsException;
+    Boolean effectsException;
+    Boolean causesException;
 
     private Location mLastLocation;
     public LocationManager mLocationManager;
@@ -146,6 +186,24 @@ public class MainActivity extends FragmentActivity implements
 
         childTextView=(TextView) findViewById(R.id.childTextView);
         childBtn=(Button) findViewById(R.id.childBtn);
+
+        sportTextView=(TextView) findViewById(R.id.sportTextView);
+        sportBtn=(Button) findViewById(R.id.sportBtn);
+
+        healthTextView=(TextView) findViewById(R.id.healthTextView);
+        healthBtn=(Button) findViewById(R.id.healthBtn);
+
+        indoorTextView=(TextView) findViewById(R.id.indoorTextView);
+        indoorBtn=(Button) findViewById(R.id.indoorBtn);
+
+        outdoorTextView=(TextView) findViewById(R.id.outdoorTextView);
+        outdoorBtn=(Button) findViewById(R.id.outdoorBtn);
+
+        effectsTextView=(TextView) findViewById(R.id.effectsTextView);
+        effectsBtn=(Button) findViewById(R.id.effectsBtn);
+
+        causesTextView=(TextView) findViewById(R.id.causesTextView);
+        causesBtn=(Button) findViewById(R.id.causesBtn);
 
         gpsTextView = (TextView) findViewById(R.id.gpsTextView);
 
@@ -207,26 +265,61 @@ public class MainActivity extends FragmentActivity implements
             polTextView.setVisibility(View.VISIBLE);
             childBtn.setVisibility(View.VISIBLE);
             childTextView.setVisibility(View.VISIBLE);
+            sportBtn.setVisibility(View.VISIBLE);
+            sportTextView.setVisibility(View.VISIBLE);
+            healthBtn.setVisibility(View.VISIBLE);
+            healthTextView.setVisibility(View.VISIBLE);
+            indoorBtn.setVisibility(View.VISIBLE);
+            indoorTextView.setVisibility(View.VISIBLE);
+            outdoorBtn.setVisibility(View.VISIBLE);
+            outdoorTextView.setVisibility(View.VISIBLE);
+            effectsBtn.setVisibility(View.VISIBLE);
+            effectsTextView.setVisibility(View.VISIBLE);
+            causesBtn.setVisibility(View.VISIBLE);
+            causesTextView.setVisibility(View.VISIBLE);
+
             aqiTextView.setText("");
             descriptionTextView.setText("");
             polTextView.setText("");
+            childTextView.setText("");
+            sportTextView.setText("");
+            healthTextView.setText("");
+            indoorTextView.setText("");
+            outdoorTextView.setText("");
+            effectsTextView.setText("");
+            causesTextView.setText("");
+
             mySnippet=new StringBuilder("");
             gettingAqi=false;
             gettingDescription=false;
             gettingPol=false;
             gettingChild=false;
+            gettingSport=false;
+            gettingHealth=false;
+            gettingIndoors=false;
+            gettingOutdoors=false;
+            gettingEffects=false;
+            gettingCauses=false;
+
             aqiException=false;
             childException=false;
             descriptionException=false;
             pollutantException=false;
+            sportException=false;
+            healthException=false;
+            indoorsException=false;
+            outdoorsException=false;
+            effectsException=false;
+            causesException=false;
+
             onMapReady(map);
         }
 
         Log.v("_dan_strAdd",location);
-        locationBtn.setOnClickListener(new View.OnClickListener(){
+        locationBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view){
-                usingGps=false;
+            public void onClick(View view) {
+                usingGps = false;
                 aqiBtn.setVisibility(View.VISIBLE);
                 aqiTextView.setVisibility(View.VISIBLE);
                 descriptionBtn.setVisibility(View.VISIBLE);
@@ -235,19 +328,34 @@ public class MainActivity extends FragmentActivity implements
                 polTextView.setVisibility(View.VISIBLE);
                 childBtn.setVisibility(View.VISIBLE);
                 childTextView.setVisibility(View.VISIBLE);
-                location=editText.getText().toString().replace(",","").replace(" ", "+");
+                location = editText.getText().toString().replace(",", "").replace(" ", "+");
                 aqiTextView.setText("");
                 descriptionTextView.setText("");
                 polTextView.setText("");
-                mySnippet=new StringBuilder("");
-                gettingAqi=false;
-                gettingDescription=false;
-                gettingPol=false;
-                gettingChild=false;
-                aqiException=false;
-                childException=false;
-                descriptionException=false;
-                pollutantException=false;
+                mySnippet = new StringBuilder("");
+
+                gettingAqi = false;
+                gettingDescription = false;
+                gettingPol = false;
+                gettingChild = false;
+                gettingSport = false;
+                gettingHealth = false;
+                gettingIndoors = false;
+                gettingOutdoors = false;
+                gettingEffects = false;
+                gettingCauses = false;
+
+                aqiException = false;
+                childException = false;
+                descriptionException = false;
+                pollutantException = false;
+                sportException = false;
+                healthException = false;
+                indoorsException = false;
+                outdoorsException = false;
+                effectsException = false;
+                causesException = false;
+
                 new LatLongTask().execute();
             }
         });
@@ -299,6 +407,77 @@ public class MainActivity extends FragmentActivity implements
             }
         });
 
+        sportBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                map.clear();
+                selection = "sport";
+                gettingSport=true;
+//                longitude=Double.parseDouble(editText2.getText().toString());
+
+                new MyTask().execute(location);
+            }
+        });
+
+        healthBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                map.clear();
+                selection = "health";
+                gettingHealth= true;
+//                longitude=Double.parseDouble(editText2.getText().toString());
+
+                new MyTask().execute(location);
+            }
+        });
+
+        indoorBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                map.clear();
+                selection = "indoors";
+                gettingIndoors=true;
+//                longitude=Double.parseDouble(editText2.getText().toString());
+
+                new MyTask().execute(location);
+            }
+        });
+
+        outdoorBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                map.clear();
+                selection = "outdoors";
+                gettingOutdoors=true;
+//                longitude=Double.parseDouble(editText2.getText().toString());
+
+                new MyTask().execute(location);
+            }
+        });
+
+        effectsBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                map.clear();
+                selection = "effects";
+                gettingEffects=true;
+//                longitude=Double.parseDouble(editText2.getText().toString());
+
+                new MyTask().execute(location);
+            }
+        });
+
+        causesBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                map.clear();
+                selection = "causes";
+                gettingCauses=true;
+//                longitude=Double.parseDouble(editText2.getText().toString());
+
+                new MyTask().execute(location);
+            }
+        });
 
 
 
@@ -392,6 +571,60 @@ public class MainActivity extends FragmentActivity implements
                     childException=true;
                     e.printStackTrace();
                 }
+            }else if(selection.equals("sport")){
+                try {
+                    jsonsport = new JSONObject(result);
+                    recommendations=jsonsport.optJSONObject("random_recommendations");
+                    sport=recommendations.optString("sport");
+                } catch (Exception e) {
+                    sportException=true;
+                    e.printStackTrace();
+                }
+            }else if(selection.equals("health")){
+                try {
+                    jsonhealth = new JSONObject(result);
+                    recommendations=jsonhealth.optJSONObject("random_recommendations");
+                    health=recommendations.optString("health");
+                } catch (Exception e) {
+                    healthException=true;
+                    e.printStackTrace();
+                }
+            }else if(selection.equals("indoors")){
+                try {
+                    jsonindoors = new JSONObject(result);
+                    recommendations=jsonindoors.optJSONObject("random_recommendations");
+                    indoors=recommendations.optString("inside");
+                } catch (Exception e) {
+                    indoorsException=true;
+                    e.printStackTrace();
+                }
+            }else if(selection.equals("outdoors")){
+                try {
+                    jsonoutdoors = new JSONObject(result);
+                    recommendations=jsonoutdoors.optJSONObject("random_recommendations");
+                    outdoors=recommendations.optString("outside");
+                } catch (Exception e) {
+                    outdoorsException=true;
+                    e.printStackTrace();
+                }
+            }else if(selection.equals("effects")){
+                try {
+                    jsoneffects = new JSONObject(result);
+                    recommendations=jsoneffects.optJSONObject("dominant_pollutant_text");
+                    effects=recommendations.optString("effects");
+                } catch (Exception e) {
+                    sportException=true;
+                    e.printStackTrace();
+                }
+            }else if(selection.equals("causes")){
+                try {
+                    jsoncauses = new JSONObject(result);
+                    recommendations=jsoncauses.optJSONObject("dominant_pollutant_text");
+                    causes=recommendations.optString("causes");
+                } catch (Exception e) {
+                    causesException=true;
+                    e.printStackTrace();
+                }
             }
             return result;
 
@@ -442,6 +675,71 @@ public class MainActivity extends FragmentActivity implements
                     childException=true;
                 }
             }
+            if(gettingSport) {
+                try {
+                    if(!mySnippet.toString().contains(sport)) {
+                        mySnippet.append(System.getProperty("line.separator") +"Recommendations for children: " + System.getProperty("line.separator")+sport);
+                    }
+                    sportTextView.setTextColor(Color.parseColor(jsonsport.optString("breezometer_color")));
+                    sportTextView.setText(sport);
+                }catch (Exception e){
+                    sportException=true;
+                }
+            }
+            if(gettingHealth) {
+                try {
+                    if(!mySnippet.toString().contains(health)) {
+                        mySnippet.append(System.getProperty("line.separator") +"Recommendations for health: " + System.getProperty("line.separator")+health);
+                    }
+                    healthTextView.setTextColor(Color.parseColor(jsonhealth.optString("breezometer_color")));
+                    healthTextView.setText(health);
+                }catch (Exception e){
+                    healthException=true;
+                }
+            }
+            if(gettingIndoors) {
+                try {
+                    if(!mySnippet.toString().contains(indoors)) {
+                        mySnippet.append(System.getProperty("line.separator") +"Recommendations for indoors: " + System.getProperty("line.separator")+indoors);
+                    }
+                    indoorTextView.setTextColor(Color.parseColor(jsonindoors.optString("breezometer_color")));
+                    indoorTextView.setText(indoors);
+                }catch (Exception e){
+                    indoorsException=true;
+                }
+            }
+            if(gettingOutdoors) {
+                try {
+                    if(!mySnippet.toString().contains(outdoors)) {
+                        mySnippet.append(System.getProperty("line.separator") +"Recommendations for outdoors: " + System.getProperty("line.separator")+outdoors);
+                    }
+                    outdoorTextView.setTextColor(Color.parseColor(jsonoutdoors.optString("breezometer_color")));
+                    outdoorTextView.setText(outdoors);
+                }catch (Exception e){
+                    outdoorsException=true;
+                }
+            }
+            if(gettingEffects) {
+                try {
+                    if(!mySnippet.toString().contains(effects)) {
+                        mySnippet.append(System.getProperty("line.separator") +"Recommendations for children: " + System.getProperty("line.separator")+effects);
+                    }
+                    effectsTextView.setTextColor(Color.parseColor(jsoneffects.optString("breezometer_color")));
+                    effectsTextView.setText(effects);
+                }catch (Exception e){
+                    effectsException=true;
+                }
+            }if(gettingCauses) {
+                try {
+                    if (!mySnippet.toString().contains(causes)) {
+                        mySnippet.append(System.getProperty("line.separator") + "Recommendations for children: " + System.getProperty("line.separator") + causes);
+                    }
+                    causesTextView.setTextColor(Color.parseColor(jsoncauses.optString("breezometer_color")));
+                    causesTextView.setText(causes);
+                } catch (Exception e) {
+                    causesException = true;
+                }
+            }
 
 
             if(aqiException){
@@ -455,6 +753,24 @@ public class MainActivity extends FragmentActivity implements
             }
             if(childException){
                 childTextView.setText("Info not available");
+            }
+            if(sportException){
+                sportTextView.setText("Info not available");
+            }
+            if(healthException){
+                healthTextView.setText("Info not available");
+            }
+            if(indoorsException){
+                indoorTextView.setText("Info not available");
+            }
+            if(outdoorsException){
+                outdoorTextView.setText("Info not available");
+            }
+            if(effectsException){
+                effectsTextView.setText("Info not available");
+            }
+            if(causesException){
+                causesTextView.setText("Info not available");
             }
             onMapReady(map);
         }
