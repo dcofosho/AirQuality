@@ -261,7 +261,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         protected void onPostExecute(String result) {
             if(gettingAqi) {
                 try {
-                    mySnippet.append(System.getProperty("line.separator")+"Air Quality Index = " + breezometerAqi);
+                    if(!mySnippet.toString().contains(breezometerAqi)) {
+                        mySnippet.append(System.getProperty("line.separator") + "Air Quality Index = " + breezometerAqi);
+                    }
                     aqiTextView.setTextColor(Color.parseColor(aqi.optString("breezometer_color")));
                     aqiTextView.setText(aqi.optString("breezometer_aqi"));
                 }catch(Exception e){
@@ -270,7 +272,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             }
             if(gettingDescription) {
                 try {
-                    mySnippet.append(System.getProperty("line.separator")+aqDescription);
+                    if(!mySnippet.toString().contains(aqDescription)) {
+                        mySnippet.append(System.getProperty("line.separator") + aqDescription);
+                    }
                     descriptionTextView.setTextColor(Color.parseColor(description.optString("breezometer_color")));
                     descriptionTextView.setText(description.optString("breezometer_description"));
                 }catch(Exception e){
@@ -279,7 +283,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             }
             if(gettingPol) {
                 try {
-                    mySnippet.append(System.getProperty("line.separator")+pollutant);
+                    if(!mySnippet.toString().contains(pollutant)) {
+                        mySnippet.append(System.getProperty("line.separator") + pollutant);
+                    }
                     polTextView.setTextColor(Color.parseColor(pol.optString("breezometer_color")));
                     polTextView.setText(pol.optString("dominant_pollutant_description"));
                 }catch (Exception e){
@@ -288,7 +294,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             }
             if(gettingChild) {
                 try {
-                    mySnippet.append(System.getProperty("line.separator")+child);
+                    if(!mySnippet.toString().contains(child)) {
+                        mySnippet.append(System.getProperty("line.separator") + child);
+                    }
                     childTextView.setTextColor(Color.parseColor(aq.optString("breezometer_color")));
                     childTextView.setText(child);
                 }catch (Exception e){
