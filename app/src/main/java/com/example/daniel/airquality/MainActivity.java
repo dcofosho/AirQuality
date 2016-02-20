@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
@@ -14,6 +15,8 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -21,11 +24,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -40,17 +46,17 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
+
+import com.google.android.gms.common.api.GoogleApiClient;
 
 /**
  * Created by Daniel on 2/7/2016.
  */
-public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MainActivity extends FragmentActivity implements
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, OnMapReadyCallback{
 
     HttpResponse response;
     String responseString;
@@ -103,19 +109,22 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     Boolean pollutantException;
     Boolean childException;
 
+    private Location mLastLocation;
+    public LocationManager mLocationManager;
+    TextView experiment;
+    String strAdd;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        int LOCATION_REFRESH_TIME = 1000;
+        int LOCATION_REFRESH_DISTANCE = 5;
+        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_REFRESH_TIME,
+                LOCATION_REFRESH_DISTANCE, mLocationListener);
 
-        gettingAqi=false;
-        gettingDescription=false;
-        gettingPol=false;
-        gettingChild=false;
-        aqiException=false;
-        childException=false;
-        descriptionException=false;
-        pollutantException=false;
         fm = (SupportMapFragment)  getSupportFragmentManager().findFragmentById(R.id.map);
         map = fm.getMap();
 
@@ -132,6 +141,14 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         childTextView=(TextView) findViewById(R.id.childTextView);
         childBtn=(Button) findViewById(R.id.childBtn);
 
+        experiment = (TextView) findViewById(R.id.experiment);
+
+        try{
+            mLastLocation=mLocationManager.getLastKnownLocation("gps");
+            experiment.setText(mLastLocation.getLatitude()+"");
+        }catch (Exception e){
+            Log.v("_dan_Exception",e.getMessage());
+        }
 
         service = new HandleService();
         editText= (EditText) findViewById(R.id.editText);
@@ -153,6 +170,14 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 descriptionTextView.setText("");
                 polTextView.setText("");
                 mySnippet=new StringBuilder("");
+                gettingAqi=false;
+                gettingDescription=false;
+                gettingPol=false;
+                gettingChild=false;
+                aqiException=false;
+                childException=false;
+                descriptionException=false;
+                pollutantException=false;
                 new LatLongTask().execute();
             }
         });
@@ -195,19 +220,159 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
 
-        childBtn.setOnClickListener(new View.OnClickListener(){
+        childBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view){
+            public void onClick(View view) {
                 map.clear();
-                selection="child";
-                location=editText.getText().toString().replace(",","").replace(" ", "+");
+                selection = "child";
+                location = editText.getText().toString().replace(",", "").replace(" ", "+");
 //                longitude=Double.parseDouble(editText2.getText().toString());
 
                 new MyTask().execute(location);
             }
         });
 
+
+
+            map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+            map.setMyLocationEnabled(true);
+            map.getUiSettings().setZoomControlsEnabled(true);
+            map.getUiSettings().setCompassEnabled(true);
+            map.getUiSettings().setMyLocationButtonEnabled(true);
+            map.getUiSettings().setZoomGesturesEnabled(true);
+            map.getUiSettings().setRotateGesturesEnabled(true);
+
+            LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            List<String> providers = lm.getProviders(true);
+            Location l = null;
+
+            for (int i = 0; i < providers.size(); i++) {
+                l = lm.getLastKnownLocation(providers.get(i));
+                if (l != null) {
+                    latitude = l.getLatitude();
+                    longitude = l.getLongitude();
+                    strAdd = getCompleteAddressString(latitude, longitude);
+                    experiment.setText("Complete Address : " + strAdd);
+                    break;
+                }
+            }
+
+            if (map != null) {
+
+                MarkerOptions marker = new MarkerOptions().position(
+                        new LatLng(latitude, longitude)).title("Hello Maps").snippet("Discription");
+
+                marker.icon(BitmapDescriptorFactory
+                        .defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+
+// Moving Camera to a Location with animation
+                CameraPosition cameraPosition = new CameraPosition.Builder()
+                        .target(new LatLng(latitude, longitude)).zoom(12).build();
+
+                map.animateCamera(CameraUpdateFactory
+                        .newCameraPosition(cameraPosition));
+
+                map.addMarker(marker);
+
+            }
+
     }
+    private String getCompleteAddressString(double LATITUDE, double LONGITUDE) {
+        String strAdd = "";
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+        try {
+            List<android.location.Address> addresses = geocoder
+                    .getFromLocation(LATITUDE, LONGITUDE, 1);
+            if (addresses != null) {
+                android.location.Address returnedAddress = addresses.get(0);
+                StringBuilder strReturnedAddress = new StringBuilder("");
+
+                for (int i = 0; i < returnedAddress.getMaxAddressLineIndex(); i++) {
+                    strReturnedAddress
+                            .append(returnedAddress.getAddressLine(i)).append(
+                            "\n");
+                }
+                strAdd = strReturnedAddress.toString();
+                Log.w("My Current loction address",
+                        "" + strReturnedAddress.toString());
+            } else {
+                Log.w("My Current loction address", "No Address returned!");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.w("My Current loction address", "Canont get Address!");
+        }
+        return strAdd;
+    }
+    private final LocationListener mLocationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(Location location) {
+            //code
+            System.out.println("onLocationChanged");
+            mLastLocation = location;
+            try{
+
+                experiment.setText(mLastLocation.getLatitude()+"");
+            }catch (Exception e){
+                Log.v("_dan_Exception",e.getMessage());
+            }
+
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+            System.out.println("onStatusChanged");
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+            System.out.println("onProviderEnabled");
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+            System.out.println("onProviderDisabled");
+            //turns off gps services
+        }
+    };
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
+    }
+
 
     class MyTask extends AsyncTask<String, Integer, String> {
         @Override
@@ -284,7 +449,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             if(gettingPol) {
                 try {
                     if(!mySnippet.toString().contains(pollutant)) {
-                        mySnippet.append(System.getProperty("line.separator") + pollutant);
+                        mySnippet.append(System.getProperty("line.separator") + "Main pollutant = "+pollutant);
                     }
                     polTextView.setTextColor(Color.parseColor(pol.optString("breezometer_color")));
                     polTextView.setText(pol.optString("dominant_pollutant_description"));
@@ -295,7 +460,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             if(gettingChild) {
                 try {
                     if(!mySnippet.toString().contains(child)) {
-                        mySnippet.append(System.getProperty("line.separator") + child);
+                        mySnippet.append(System.getProperty("line.separator") +"Recommendations for children: " + System.getProperty("line.separator")+child);
                     }
                     childTextView.setTextColor(Color.parseColor(aq.optString("breezometer_color")));
                     childTextView.setText(child);
