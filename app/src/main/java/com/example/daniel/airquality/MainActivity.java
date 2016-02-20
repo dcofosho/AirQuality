@@ -715,7 +715,7 @@ public class MainActivity extends FragmentActivity implements
             if(gettingEffects) {
                 try {
                     if(!mySnippet.toString().contains(effects)) {
-                        mySnippet.append(System.getProperty("line.separator") +"Recommendations for children: " + System.getProperty("line.separator")+effects);
+                        mySnippet.append(System.getProperty("line.separator") +"Health effects: " + System.getProperty("line.separator")+effects);
                     }
                     effectsTextView.setTextColor(Color.parseColor(jsoneffects.optString("breezometer_color")));
                     effectsTextView.setText(effects);
@@ -725,7 +725,7 @@ public class MainActivity extends FragmentActivity implements
             }if(gettingCauses) {
                 try {
                     if (!mySnippet.toString().contains(causes)) {
-                        mySnippet.append(System.getProperty("line.separator") + "Recommendations for children: " + System.getProperty("line.separator") + causes);
+                        mySnippet.append(System.getProperty("line.separator") + "Causes: " + System.getProperty("line.separator") + causes);
                     }
                     causesTextView.setTextColor(Color.parseColor(jsoncauses.optString("breezometer_color")));
                     causesTextView.setText(causes);
