@@ -336,6 +336,14 @@ public class MainActivity extends FragmentActivity implements
                     aqiTextView.setText("");
                     descriptionTextView.setText("");
                     polTextView.setText("");
+                    childTextView.setText("");
+                    sportTextView.setText("");
+                    healthTextView.setText("");
+                    indoorTextView.setText("");
+                    outdoorTextView.setText("");
+                    effectsTextView.setText("");
+                    causesTextView.setText("");
+
                     mySnippet = new StringBuilder("");
 
                     gettingAqi = false;
