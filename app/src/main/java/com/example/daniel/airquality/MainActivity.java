@@ -82,6 +82,7 @@ public class MainActivity extends FragmentActivity implements
     JSONObject description;
     JSONObject pol;
     JSONObject recommendations;
+    JSONObject jsonChild;
     JSONObject locationObj;
     JSONObject locationInfo;
     String child;
@@ -115,10 +116,13 @@ public class MainActivity extends FragmentActivity implements
     String strAdd;
     Boolean usingGps;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         latitude=0.0;
         longitude=0.0;
         int LOCATION_REFRESH_TIME = 1000;
@@ -170,7 +174,9 @@ public class MainActivity extends FragmentActivity implements
 
                 strAdd = getCompleteAddressString(latitude, longitude);
                 location=strAdd.replace(",","").replace(" ", "+");
-                gpsTextView.setText("Got GPS Location : " + strAdd);
+                if(!(strAdd=="")) {
+                    gpsTextView.setText("Got GPS Location : " + strAdd);
+                }
                 Log.v("_dan_location",location);
                 break;
             }
@@ -275,7 +281,7 @@ public class MainActivity extends FragmentActivity implements
                 map.clear();
                 selection="pol";
 //                longitude=Double.parseDouble(editText2.getText().toString());
-                gettingChild=true;
+                gettingPol=true;
 
                 new MyTask().execute(location);
             }
@@ -286,7 +292,7 @@ public class MainActivity extends FragmentActivity implements
             public void onClick(View view) {
                 map.clear();
                 selection = "child";
-
+                gettingChild=true;
 //                longitude=Double.parseDouble(editText2.getText().toString());
 
                 new MyTask().execute(location);
@@ -379,8 +385,8 @@ public class MainActivity extends FragmentActivity implements
                 }
             }else if(selection.equals("child")){
                 try {
-                    aq = new JSONObject(result);
-                    recommendations=aq.optJSONObject("random_recommendations");
+                    jsonChild = new JSONObject(result);
+                    recommendations=jsonChild.optJSONObject("random_recommendations");
                     child=recommendations.optString("children");
                 } catch (Exception e) {
                     childException=true;
@@ -430,7 +436,7 @@ public class MainActivity extends FragmentActivity implements
                     if(!mySnippet.toString().contains(child)) {
                         mySnippet.append(System.getProperty("line.separator") +"Recommendations for children: " + System.getProperty("line.separator")+child);
                     }
-                    childTextView.setTextColor(Color.parseColor(aq.optString("breezometer_color")));
+                    childTextView.setTextColor(Color.parseColor(jsonChild.optString("breezometer_color")));
                     childTextView.setText(child);
                 }catch (Exception e){
                     childException=true;
@@ -518,7 +524,7 @@ public class MainActivity extends FragmentActivity implements
 
         LatLng pos = new LatLng(latitude,longitude);
 
-        googleMap.addMarker(new MarkerOptions().position(pos).title(location).snippet(mySnippet.toString()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+        googleMap.addMarker(new MarkerOptions().position(pos).title(location.replace("+"," ")).snippet(mySnippet.toString()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
         googleMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
 
             @Override
