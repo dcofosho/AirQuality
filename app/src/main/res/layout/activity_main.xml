@@ -21,7 +21,7 @@
         class="com.google.android.gms.maps.SupportMapFragment"
         android:id="@+id/map"
         android:layout_width="match_parent"
-        android:layout_height="200dp"/>
+        android:layout_height="400dp"/>
 
     <Button
             android:layout_width="wrap_content"
@@ -74,6 +74,16 @@
             android:visibility="invisible" />
     </LinearLayout>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text=""
+        android:id="@+id/aqiTextView2"
+        android:textColor="#a7a7a7"
+        android:layout_gravity="center_horizontal"
+        android:visibility="invisible" />
+
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
@@ -97,9 +107,18 @@
             android:visibility="invisible" />
 
     </LinearLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text=""
+        android:id="@+id/descriptionTextView2"
+        android:textColor="#a7a7a7"
+        android:layout_gravity="center_horizontal"
+        android:visibility="invisible" />
 
     <LinearLayout
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
@@ -112,14 +131,16 @@
             android:id="@+id/polBtn"
             android:visibility="invisible" />
 
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text=""
             android:id="@+id/polTextView" />
     </LinearLayout>
+
     <LinearLayout
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
@@ -133,13 +154,13 @@
             android:visibility="invisible" />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text=""
             android:id="@+id/effectsTextView" />
     </LinearLayout>
     <LinearLayout
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
@@ -168,7 +189,7 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Get recommendation for athletes"
+            android:text="Get recommendation for health"
             android:id="@+id/healthBtn"
             android:visibility="invisible" />
 
