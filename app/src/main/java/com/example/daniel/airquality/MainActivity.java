@@ -232,8 +232,10 @@ public class MainActivity extends FragmentActivity implements
 
                 strAdd = getCompleteAddressString(latitude, longitude);
                 location=strAdd.replace(",","").replace(" ", "+");
-                if(!(strAdd=="")) {
-                    gpsTextView.setText("Got GPS Location : " + strAdd);
+                if(!(strAdd.equals(""))) {
+                    editText.setHint("To get a new location, type address/city/state/country/ZIP code etc. here");
+                    locationBtn.setText("Get new location");
+                    gpsTextView.setText("Automatically Got GPS Location : " + strAdd);
                 }
                 Log.v("_dan_location",location);
                 break;
@@ -319,44 +321,48 @@ public class MainActivity extends FragmentActivity implements
         locationBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                usingGps = false;
-                aqiBtn.setVisibility(View.VISIBLE);
-                aqiTextView.setVisibility(View.VISIBLE);
-                descriptionBtn.setVisibility(View.VISIBLE);
-                descriptionTextView.setVisibility(View.VISIBLE);
-                polBtn.setVisibility(View.VISIBLE);
-                polTextView.setVisibility(View.VISIBLE);
-                childBtn.setVisibility(View.VISIBLE);
-                childTextView.setVisibility(View.VISIBLE);
-                location = editText.getText().toString().replace(",", "").replace(" ", "+");
-                aqiTextView.setText("");
-                descriptionTextView.setText("");
-                polTextView.setText("");
-                mySnippet = new StringBuilder("");
 
-                gettingAqi = false;
-                gettingDescription = false;
-                gettingPol = false;
-                gettingChild = false;
-                gettingSport = false;
-                gettingHealth = false;
-                gettingIndoors = false;
-                gettingOutdoors = false;
-                gettingEffects = false;
-                gettingCauses = false;
+                if(!editText.getText().toString().equals("")) {
+                    usingGps = false;
+                    aqiBtn.setVisibility(View.VISIBLE);
+                    aqiTextView.setVisibility(View.VISIBLE);
+                    descriptionBtn.setVisibility(View.VISIBLE);
+                    descriptionTextView.setVisibility(View.VISIBLE);
+                    polBtn.setVisibility(View.VISIBLE);
+                    polTextView.setVisibility(View.VISIBLE);
+                    childBtn.setVisibility(View.VISIBLE);
+                    childTextView.setVisibility(View.VISIBLE);
 
-                aqiException = false;
-                childException = false;
-                descriptionException = false;
-                pollutantException = false;
-                sportException = false;
-                healthException = false;
-                indoorsException = false;
-                outdoorsException = false;
-                effectsException = false;
-                causesException = false;
+                    aqiTextView.setText("");
+                    descriptionTextView.setText("");
+                    polTextView.setText("");
+                    mySnippet = new StringBuilder("");
 
-                new LatLongTask().execute();
+                    gettingAqi = false;
+                    gettingDescription = false;
+                    gettingPol = false;
+                    gettingChild = false;
+                    gettingSport = false;
+                    gettingHealth = false;
+                    gettingIndoors = false;
+                    gettingOutdoors = false;
+                    gettingEffects = false;
+                    gettingCauses = false;
+
+                    aqiException = false;
+                    childException = false;
+                    descriptionException = false;
+                    pollutantException = false;
+                    sportException = false;
+                    healthException = false;
+                    indoorsException = false;
+                    outdoorsException = false;
+                    effectsException = false;
+                    causesException = false;
+                    location = editText.getText().toString().replace(",", "").replace(" ", "+");
+                    new LatLongTask().execute();
+                }
+
             }
         });
         aqiBtn.setOnClickListener(new View.OnClickListener(){
@@ -666,9 +672,6 @@ public class MainActivity extends FragmentActivity implements
             }
             if(gettingChild) {
                 try {
-                    if(!mySnippet.toString().contains(child)) {
-                        mySnippet.append(System.getProperty("line.separator") +"Recommendations for children: " + System.getProperty("line.separator")+child);
-                    }
                     childTextView.setTextColor(Color.parseColor(jsonChild.optString("breezometer_color")));
                     childTextView.setText(child);
                 }catch (Exception e){
@@ -677,9 +680,7 @@ public class MainActivity extends FragmentActivity implements
             }
             if(gettingSport) {
                 try {
-                    if(!mySnippet.toString().contains(sport)) {
-                        mySnippet.append(System.getProperty("line.separator") +"Recommendations for children: " + System.getProperty("line.separator")+sport);
-                    }
+
                     sportTextView.setTextColor(Color.parseColor(jsonsport.optString("breezometer_color")));
                     sportTextView.setText(sport);
                 }catch (Exception e){
@@ -688,9 +689,7 @@ public class MainActivity extends FragmentActivity implements
             }
             if(gettingHealth) {
                 try {
-                    if(!mySnippet.toString().contains(health)) {
-                        mySnippet.append(System.getProperty("line.separator") +"Recommendations for health: " + System.getProperty("line.separator")+health);
-                    }
+
                     healthTextView.setTextColor(Color.parseColor(jsonhealth.optString("breezometer_color")));
                     healthTextView.setText(health);
                 }catch (Exception e){
@@ -699,9 +698,6 @@ public class MainActivity extends FragmentActivity implements
             }
             if(gettingIndoors) {
                 try {
-                    if(!mySnippet.toString().contains(indoors)) {
-                        mySnippet.append(System.getProperty("line.separator") +"Recommendations for indoors: " + System.getProperty("line.separator")+indoors);
-                    }
                     indoorTextView.setTextColor(Color.parseColor(jsonindoors.optString("breezometer_color")));
                     indoorTextView.setText(indoors);
                 }catch (Exception e){
@@ -710,9 +706,6 @@ public class MainActivity extends FragmentActivity implements
             }
             if(gettingOutdoors) {
                 try {
-                    if(!mySnippet.toString().contains(outdoors)) {
-                        mySnippet.append(System.getProperty("line.separator") +"Recommendations for outdoors: " + System.getProperty("line.separator")+outdoors);
-                    }
                     outdoorTextView.setTextColor(Color.parseColor(jsonoutdoors.optString("breezometer_color")));
                     outdoorTextView.setText(outdoors);
                 }catch (Exception e){
@@ -840,7 +833,7 @@ public class MainActivity extends FragmentActivity implements
 
         LatLng pos = new LatLng(latitude,longitude);
 
-        googleMap.addMarker(new MarkerOptions().position(pos).title(location.replace("+"," ")).snippet(mySnippet.toString()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+        googleMap.addMarker(new MarkerOptions().position(pos).title(location.replace("+", " ")).snippet(mySnippet.toString()).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
         googleMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
 
             @Override
